@@ -1,11 +1,14 @@
 /**
   ******************************************************************************
-  * File Name          : stm32f7xx_hal_msp.c
-  * Description        : This file provides code for the MSP Initialization 
-  *                      and de-Initialization codes.
+  * @file    Templates/Src/stm32f7xx_hal_msp.c
+  * @author  MCD Application Team
+  * @version V1.0.0
+  * @date    22-April-2016
+  * @brief   HAL MSP module.
   ******************************************************************************
+  * @attention
   *
-  * COPYRIGHT(c) 2016 STMicroelectronics
+  * <h2><center>&copy; COPYRIGHT(c) 2016 STMicroelectronics</center></h2>
   *
   * Redistribution and use in source and binary forms, with or without modification,
   * are permitted provided that the following conditions are met:
@@ -31,48 +34,247 @@
   *
   ******************************************************************************
   */
+
 /* Includes ------------------------------------------------------------------*/
-#include "stm32f7xx_hal.h"
+#include "main.h"
 
-extern void Error_Handler(void);
-/* USER CODE BEGIN 0 */
+/** @addtogroup STM32F7xx_HAL_Examples
+  * @{
+  */
 
-/* USER CODE END 0 */
+/** @addtogroup Templates
+  * @{
+  */
+
+/* Private typedef -----------------------------------------------------------*/
+/* Private define ------------------------------------------------------------*/
+/* Private macro -------------------------------------------------------------*/
+/* Private variables ---------------------------------------------------------*/
+/* Private function prototypes -----------------------------------------------*/
+/* Private functions ---------------------------------------------------------*/
+
+/** @defgroup HAL_MSP_Private_Functions
+  * @{
+  */
+
 /**
-  * Initializes the Global MSP.
+  * @brief I2C MSP Initialization
+  *        This function configures the hardware resources used in this example:
+  *           - Peripheral's clock enable
+  *           - Peripheral's GPIO Configuration
+  *           - DMA configuration for transmission request by peripheral
+  *           - NVIC configuration for DMA interrupt request enable
+  * @param hi2c: I2C handle pointer
+  * @retval None
+  */
+void HAL_I2C_MspInit(I2C_HandleTypeDef *hi2c)
+{
+  GPIO_InitTypeDef  GPIO_InitStruct;
+  RCC_PeriphCLKInitTypeDef  RCC_PeriphCLKInitStruct;
+
+  /*##-1- Configure the I2C clock source. The clock is derived from the SYSCLK #*/
+  RCC_PeriphCLKInitStruct.PeriphClockSelection = RCC_PERIPHCLK_I2Cx;
+  RCC_PeriphCLKInitStruct.I2c1ClockSelection = RCC_I2CxCLKSOURCE_SYSCLK;
+  HAL_RCCEx_PeriphCLKConfig(&RCC_PeriphCLKInitStruct);
+
+  /*##-2- Enable peripherals and GPIO Clocks #################################*/
+  /* Enable GPIO TX/RX clock */
+  I2Cx_SCL_GPIO_CLK_ENABLE();
+  I2Cx_SDA_GPIO_CLK_ENABLE();
+  /* Enable I2Cx clock */
+  I2Cx_CLK_ENABLE();
+
+  /*##-3- Configure peripheral GPIO ##########################################*/
+  /* I2C TX GPIO pin configuration  */
+  GPIO_InitStruct.Pin       = I2Cx_SCL_PIN;
+  GPIO_InitStruct.Mode      = GPIO_MODE_AF_OD;
+  GPIO_InitStruct.Pull      = GPIO_PULLUP;
+  GPIO_InitStruct.Speed     = GPIO_SPEED_HIGH;
+  GPIO_InitStruct.Alternate = I2Cx_SCL_SDA_AF;
+  HAL_GPIO_Init(I2Cx_SCL_GPIO_PORT, &GPIO_InitStruct);
+
+  /* I2C RX GPIO pin configuration  */
+  GPIO_InitStruct.Pin       = I2Cx_SDA_PIN;
+  GPIO_InitStruct.Alternate = I2Cx_SCL_SDA_AF;
+  HAL_GPIO_Init(I2Cx_SDA_GPIO_PORT, &GPIO_InitStruct);
+}
+
+/**
+  * @brief I2C MSP De-Initialization
+  *        This function frees the hardware resources used in this example:
+  *          - Disable the Peripheral's clock
+  *          - Revert GPIO, DMA and NVIC configuration to their default state
+  * @param hi2c: I2C handle pointer
+  * @retval None
+  */
+void HAL_I2C_MspDeInit(I2C_HandleTypeDef *hi2c)
+{
+
+  /*##-1- Reset peripherals ##################################################*/
+  I2Cx_FORCE_RESET();
+  I2Cx_RELEASE_RESET();
+
+  /*##-2- Disable peripherals and GPIO Clocks #################################*/
+  /* Configure I2C Tx as alternate function  */
+  HAL_GPIO_DeInit(I2Cx_SCL_GPIO_PORT, I2Cx_SCL_PIN);
+  /* Configure I2C Rx as alternate function  */
+  HAL_GPIO_DeInit(I2Cx_SDA_GPIO_PORT, I2Cx_SDA_PIN);
+}
+
+void HAL_UART_MspInit(UART_HandleTypeDef *huart)
+{
+  GPIO_InitTypeDef  GPIO_InitStruct;
+
+  RCC_PeriphCLKInitTypeDef RCC_PeriphClkInit;
+
+  if(huart->Instance == USARTx) {
+	  /*##-1- Enable peripherals and GPIO Clocks #################################*/
+	  /* Enable GPIO TX/RX clock */
+	  USARTx_TX_GPIO_CLK_ENABLE();
+	  USARTx_RX_GPIO_CLK_ENABLE();
+
+	  /* Select SysClk as source of USART1 clocks */
+	  RCC_PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART1;
+	  RCC_PeriphClkInit.Usart1ClockSelection = RCC_USART1CLKSOURCE_SYSCLK;
+	  HAL_RCCEx_PeriphCLKConfig(&RCC_PeriphClkInit);
+
+	  /* Enable USARTx clock */
+	  USARTx_CLK_ENABLE();
+
+	  /*##-2- Configure peripheral GPIO ##########################################*/
+	  /* UART TX GPIO pin configuration  */
+	  GPIO_InitStruct.Pin       = USARTx_TX_PIN;
+	  GPIO_InitStruct.Mode      = GPIO_MODE_AF_PP;
+	  GPIO_InitStruct.Pull      = GPIO_PULLUP;
+	  GPIO_InitStruct.Speed     = GPIO_SPEED_FREQ_VERY_HIGH;
+	  GPIO_InitStruct.Alternate = USARTx_TX_AF;
+
+	  HAL_GPIO_Init(USARTx_TX_GPIO_PORT, &GPIO_InitStruct);
+
+	  /* UART RX GPIO pin configuration  */
+	  GPIO_InitStruct.Pin = USARTx_RX_PIN;
+	  GPIO_InitStruct.Alternate = USARTx_RX_AF;
+
+	  HAL_GPIO_Init(USARTx_RX_GPIO_PORT, &GPIO_InitStruct);
+
+	  /*##-3- Configure the NVIC for UART ########################################*/
+	  /* NVIC for USART */
+	  HAL_NVIC_SetPriority(USARTx_IRQn, 0, 1);
+	  HAL_NVIC_EnableIRQ(USARTx_IRQn);
+  } else if (huart->Instance == USARTaux) {
+	  /*##-1- Enable peripherals and GPIO Clocks #################################*/
+	    /* Enable GPIO TX/RX clock */
+	    USARTaux_TX_GPIO_CLK_ENABLE();
+	    USARTaux_RX_GPIO_CLK_ENABLE();
+
+	    /* Select SysClk as source of USART1 clocks */
+	    RCC_PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART1;
+	    RCC_PeriphClkInit.Usart1ClockSelection = RCC_USART1CLKSOURCE_SYSCLK;
+	    HAL_RCCEx_PeriphCLKConfig(&RCC_PeriphClkInit);
+
+	    /* Enable USARTx clock */
+	    USARTaux_CLK_ENABLE();
+
+	    /*##-2- Configure peripheral GPIO ##########################################*/
+	    /* UART TX GPIO pin configuration  */
+	    GPIO_InitStruct.Pin       = USARTaux_TX_PIN;
+	    GPIO_InitStruct.Mode      = GPIO_MODE_AF_PP;
+	    GPIO_InitStruct.Pull      = GPIO_PULLUP;
+	    GPIO_InitStruct.Speed     = GPIO_SPEED_FREQ_VERY_HIGH;
+	    GPIO_InitStruct.Alternate = USARTaux_TX_AF;
+
+	    HAL_GPIO_Init(USARTaux_TX_GPIO_PORT, &GPIO_InitStruct);
+
+	    /* UART RX GPIO pin configuration  */
+	    GPIO_InitStruct.Pin = USARTaux_RX_PIN;
+	    GPIO_InitStruct.Alternate = USARTaux_RX_AF;
+
+	    HAL_GPIO_Init(USARTaux_RX_GPIO_PORT, &GPIO_InitStruct);
+
+	    /*##-3- Configure the NVIC for UART ########################################*/
+	    /* NVIC for USART */
+	    HAL_NVIC_SetPriority(USARTaux_IRQn, 0, 1);
+	    HAL_NVIC_EnableIRQ(USARTaux_IRQn);
+  } else {
+	  while(1);
+  }
+}
+
+void HAL_TIM_PWM_MspInit(TIM_HandleTypeDef *htim)
+{
+  GPIO_InitTypeDef   GPIO_InitStruct;
+  /*##-1- Enable peripherals and GPIO Clocks #################################*/
+  /* TIMx Peripheral clock enable */
+  TIMx_CLK_ENABLE();
+
+  /* Enable all GPIO Channels Clock requested */
+  TIMx_CHANNEL_GPIO_PORT();
+
+  /* Configure PB.04 (pin 19 in CN7 connector) (TIM3_Channel1), PB.05 (pin 13 in CN7 connector) (TIM3_Channel2), PB.00 (pin 31 in CN10 connector) (TIM3_Channel3),
+     PB.01 (pin 7 in CN10 connector) (TIM3_Channel4) in output, push-pull, alternate function mode
+  */
+  /* Common configuration for all channels */
+  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+
+  GPIO_InitStruct.Alternate = TIMx_GPIO_AF_CHANNEL1;
+  GPIO_InitStruct.Pin = TIMx_GPIO_PIN_CHANNEL1;
+  HAL_GPIO_Init(TIMx_GPIO_PORT_CHANNEL1, &GPIO_InitStruct);
+
+  GPIO_InitStruct.Alternate = TIMx_GPIO_AF_CHANNEL2;
+  GPIO_InitStruct.Pin = TIMx_GPIO_PIN_CHANNEL2;
+  HAL_GPIO_Init(TIMx_GPIO_PORT_CHANNEL2, &GPIO_InitStruct);
+
+//  GPIO_InitStruct.Alternate = TIMx_GPIO_AF_CHANNEL3;
+//  GPIO_InitStruct.Pin = TIMx_GPIO_PIN_CHANNEL3;
+//  HAL_GPIO_Init(TIMx_GPIO_PORT_CHANNEL3, &GPIO_InitStruct);
+//
+//  GPIO_InitStruct.Alternate = TIMx_GPIO_AF_CHANNEL4;
+//  GPIO_InitStruct.Pin = TIMx_GPIO_PIN_CHANNEL4;
+//  HAL_GPIO_Init(TIMx_GPIO_PORT_CHANNEL4, &GPIO_InitStruct);
+}
+
+
+/**
+  * @brief  Initializes the Global MSP.
+  * @param  None
+  * @retval None
   */
 void HAL_MspInit(void)
 {
-  /* USER CODE BEGIN MspInit 0 */
-
-  /* USER CODE END MspInit 0 */
-
-  HAL_NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4);
-
-  /* System interrupt init*/
-  /* MemoryManagement_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(MemoryManagement_IRQn, 0, 0);
-  /* BusFault_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(BusFault_IRQn, 0, 0);
-  /* UsageFault_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(UsageFault_IRQn, 0, 0);
-  /* SVCall_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(SVCall_IRQn, 0, 0);
-  /* DebugMonitor_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DebugMonitor_IRQn, 0, 0);
-  /* PendSV_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(PendSV_IRQn, 0, 0);
-  /* SysTick_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
-
-  /* USER CODE BEGIN MspInit 1 */
-
-  /* USER CODE END MspInit 1 */
 }
 
-/* USER CODE BEGIN 1 */
+/**
+  * @brief  DeInitializes the Global MSP.
+  * @param  None  
+  * @retval None
+  */
+void HAL_MspDeInit(void)
+{
+}
 
-/* USER CODE END 1 */
+/**
+  * @brief  Initializes the PPP MSP.
+  * @param  None
+  * @retval None
+  */
+/*void HAL_PPP_MspInit(void)
+{*/
+/*}*/
+
+/**
+  * @brief  DeInitializes the PPP MSP.
+  * @param  None  
+  * @retval None
+  */
+/*void HAL_PPP_MspDeInit(void)
+{*/
+/*}*/
+
+/**
+  * @}
+  */
 
 /**
   * @}

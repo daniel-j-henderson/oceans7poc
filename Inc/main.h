@@ -1,10 +1,14 @@
 /**
   ******************************************************************************
-  * File Name          : main.h
-  * Description        : This file contains the common defines of the application
+  * @file    Templates/Inc/main.h 
+  * @author  MCD Application Team
+  * @version V1.0.0
+  * @date    22-April-2016
+  * @brief   Header for main.c module
   ******************************************************************************
+  * @attention
   *
-  * COPYRIGHT(c) 2016 STMicroelectronics
+  * <h2><center>&copy; COPYRIGHT(c) 2016 STMicroelectronics</center></h2>
   *
   * Redistribution and use in source and binary forms, with or without modification,
   * are permitted provided that the following conditions are met:
@@ -30,28 +34,113 @@
   *
   ******************************************************************************
   */
+  
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __MAIN_H
 #define __MAIN_H
-  /* Includes ------------------------------------------------------------------*/
 
-/* USER CODE BEGIN Includes */
+/* Includes ------------------------------------------------------------------*/
+#include "stm32f7xx_hal.h"
+#include "stm32f7xx_nucleo_144.h"
+#include "stdio.h"
+/* Exported types ------------------------------------------------------------*/
+#define op_mode uint8_t;
+/* Exported constants --------------------------------------------------------*/
+#define UART_MODE 0
+#define I2C_MODE 1
+#define MOTOR_ON 2
+#define MOTOR_OFF 3
 
-/* USER CODE END Includes */
+/* Exported macro ------------------------------------------------------------*/
 
-/* Private define ------------------------------------------------------------*/
+#define TIMx                           TIM3
+#define TIMx_CLK_ENABLE()              __TIM3_CLK_ENABLE()
 
-/* USER CODE BEGIN Private defines */
+/* Definition for TIMx Channel Pins */
+#define TIMx_CHANNEL_GPIO_PORT()       __HAL_RCC_GPIOA_CLK_ENABLE();
+#define TIMx_GPIO_PORT_CHANNEL1        GPIOA
+#define TIMx_GPIO_PORT_CHANNEL2        GPIOA
+//#define TIMx_GPIO_PORT_CHANNEL3        GPIOB
+//#define TIMx_GPIO_PORT_CHANNEL4        GPIOB
+#define TIMx_GPIO_PIN_CHANNEL1         GPIO_PIN_6
+#define TIMx_GPIO_PIN_CHANNEL2         GPIO_PIN_7
+//#define TIMx_GPIO_PIN_CHANNEL3         GPIO_PIN_0
+//#define TIMx_GPIO_PIN_CHANNEL4         GPIO_PIN_1
+#define TIMx_GPIO_AF_CHANNEL1          GPIO_AF2_TIM3
+#define TIMx_GPIO_AF_CHANNEL2          GPIO_AF2_TIM3
+#define TIMx_GPIO_AF_CHANNEL3          GPIO_AF2_TIM3
+#define TIMx_GPIO_AF_CHANNEL4          GPIO_AF2_TIM3
 
-/* USER CODE END Private defines */
 
-/**
-  * @}
-  */ 
+#define USARTx                           USART3
+#define USARTx_CLK_ENABLE()              __HAL_RCC_USART3_CLK_ENABLE();
+#define USARTx_RX_GPIO_CLK_ENABLE()      __HAL_RCC_GPIOD_CLK_ENABLE()
+#define USARTx_TX_GPIO_CLK_ENABLE()      __HAL_RCC_GPIOD_CLK_ENABLE()
 
-/**
-  * @}
-*/ 
+#define USARTx_FORCE_RESET()             __HAL_RCC_USART3_FORCE_RESET()
+#define USARTx_RELEASE_RESET()           __HAL_RCC_USART3_RELEASE_RESET()
+
+/* Definition for USARTx Pins */
+#define USARTx_TX_PIN                    GPIO_PIN_8
+#define USARTx_TX_GPIO_PORT              GPIOD
+#define USARTx_TX_AF                     GPIO_AF7_USART3
+#define USARTx_RX_PIN                    GPIO_PIN_9
+#define USARTx_RX_GPIO_PORT              GPIOD
+#define USARTx_RX_AF                     GPIO_AF7_USART3
+
+/* Definition for USARTx's NVIC */
+#define USARTx_IRQn                      USART3_IRQn
+#define USARTx_IRQHandler                USART3_IRQHandler
+
+/* Auxillary USART */
+#define USARTaux                           USART2
+#define USARTaux_CLK_ENABLE()              __HAL_RCC_USART2_CLK_ENABLE();
+#define USARTaux_RX_GPIO_CLK_ENABLE()      __HAL_RCC_GPIOD_CLK_ENABLE()
+#define USARTaux_TX_GPIO_CLK_ENABLE()      __HAL_RCC_GPIOD_CLK_ENABLE()
+
+#define USARTaux_FORCE_RESET()             __HAL_RCC_USART2_FORCE_RESET()
+#define USARTaux_RELEASE_RESET()           __HAL_RCC_USART2_RELEASE_RESET()
+
+/* Definition for USARTaux Pins */
+#define USARTaux_TX_PIN                    GPIO_PIN_5
+#define USARTaux_TX_GPIO_PORT              GPIOD
+#define USARTaux_TX_AF                     GPIO_AF7_USART2
+#define USARTaux_RX_PIN                    GPIO_PIN_6
+#define USARTaux_RX_GPIO_PORT              GPIOD
+#define USARTaux_RX_AF                     GPIO_AF7_USART2
+
+/* Definition for USARTaux's NVIC */
+#define USARTaux_IRQn                      USART2_IRQn
+#define USARTaux_IRQHandler                USART2_IRQHandler
+
+
+/* Definition for I2Cx clock resources */
+#define I2Cx                            I2C1
+#define RCC_PERIPHCLK_I2Cx              RCC_PERIPHCLK_I2C1
+#define RCC_I2CxCLKSOURCE_SYSCLK        RCC_I2C1CLKSOURCE_PCLK1
+#define I2Cx_CLK_ENABLE()               __HAL_RCC_I2C1_CLK_ENABLE()
+#define I2Cx_SDA_GPIO_CLK_ENABLE()      __HAL_RCC_GPIOB_CLK_ENABLE()
+#define I2Cx_SCL_GPIO_CLK_ENABLE()      __HAL_RCC_GPIOB_CLK_ENABLE()
+
+#define I2Cx_FORCE_RESET()              __HAL_RCC_I2C1_FORCE_RESET()
+#define I2Cx_RELEASE_RESET()            __HAL_RCC_I2C1_RELEASE_RESET()
+
+/* Definition for I2Cx Pins */
+#define I2Cx_SCL_PIN                    GPIO_PIN_8
+#define I2Cx_SCL_GPIO_PORT              GPIOB
+#define I2Cx_SDA_PIN                    GPIO_PIN_9
+#define I2Cx_SDA_GPIO_PORT              GPIOB
+#define I2Cx_SCL_SDA_AF                 GPIO_AF4_I2C1
+
+
+
+/* Exported macro ------------------------------------------------------------*/
+#define COUNTOF(__BUFFER__)   (sizeof(__BUFFER__) / sizeof(*(__BUFFER__)))
+
+
+
+/* Exported functions ------------------------------------------------------- */
 
 #endif /* __MAIN_H */
+
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
